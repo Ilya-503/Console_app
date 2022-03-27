@@ -1,0 +1,8 @@
+Hello world!
+<s_tar>
+
+Do u feel good?
+
+<s_tar>
+That's nice!
+<s_tar>
