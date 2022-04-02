@@ -1,108 +1,103 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class FileManager {
 
-    String startTag = "<m_tar>", endTag = "</m_tar>", sepTag = "<s_tar>";
-
     public void separate(String inputFile) {
-        int fileCounter = 0;
-        List<String> inputStrings = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
-            String string = reader.readLine();
-            while (string != null) {
-                if (string.trim().equals(sepTag)) {
-                    fileCounter++;
-                    writeToFile(inputFile, inputStrings, fileCounter);
-                    inputStrings.clear();
-                }
-                else {
-                    inputStrings.add(string);
-                }
-                string = reader.readLine();
+            checkInputFileFormat(inputFile);
+            int fileCounter = Integer.parseInt(reader.readLine());
+            String[] files = new String[fileCounter];
+            Integer[] lines = new Integer[fileCounter];
+            for (int index = 0; index < fileCounter; index++) {
+                String[] info = reader.readLine().split(" ");
+                files[index] = info[0];
+                lines[index] = Integer.parseInt(info[1]);
             }
-            System.out.printf("Separate success!\nInput file: %s\nSeparated into %d files", inputFile, fileCounter);
-        } catch (IOException ex) {
-            System.err.printf("File %s was not found", inputFile);
-        }
-    }
-
-    private void writeToFile(String inputFile, List<String> inputStrings, int fileCounter) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter
-                (new FileWriter(inputFile.replace(".txt", fileCounter + ".txt")))) {
-            writer.write(startTag);
-            writer.newLine();
-            inputStrings.forEach((it) -> {
-                try {
-                    writer.write(it);
-                    writer.newLine();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            });
-            writer.write(endTag);
-        }
-    }
-
-    public void merge(List<String> files, String outputFile) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
-            for (String inputFile : files) {
-                checkFile(inputFile);
-                try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
-                    boolean isStart = false;
-                    String string = reader.readLine();
-                    while (string != null) {
-                        if (string.trim().equals(startTag)) {
-                            isStart = true;
-                            string = reader.readLine();
-                            while (!string.trim().equals(endTag)) {
-                                writer.write(string);
-                                writer.newLine();
-                                string = reader.readLine();
-                            }
-                        }
-                        if (string.trim().equals(endTag)) {
-                            if (isStart) {
-                                writer.write(sepTag);
-                                writer.newLine();
-                                isStart = false;
-                            }
-                        }
-                        string = reader.readLine();
+            for (int index = 0; index < fileCounter; index++) {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(files[index]))) {
+                    int lineCounter = 0;
+                    while (lineCounter < lines[index]) {
+                        writer.write(reader.readLine());
+                        writer.newLine();
+                        lineCounter++;
                     }
                 }
             }
-            System.out.printf("Merge success!\nInput files: %s\nOutput file: %s", files, outputFile);
+            System.out.printf("Separate success!\nInput file: %s\nOutput files: %s",
+                    inputFile, Arrays.stream(files).toList());
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
         }
     }
 
-    private void checkFile(String inputFile) throws Exception {
-            try(BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
-                boolean isStart = false;
-                String string = reader.readLine();
-                while (string != null) {
-                    if (string.trim().equals(startTag)) {
-                        if (isStart) {
-                            throw new Exception("Incorrect use of tags");
-                        }
-                        isStart = true;
-                    }
-                    if (string.trim().equals(endTag)) {
-                        if (!isStart) {
-                            throw new Exception("Incorrect use of tags");
-                        }
-                        isStart = false;
-                    }
-                    string = reader.readLine();
-                }
-                if (isStart) {
-                    throw new Exception("Incorrect use of tags");
-                }
-            } catch (IOException ex) {
-                throw new IOException("File " + inputFile +" doesn't exist");
+    private void checkInputFileFormat(String inputFile) throws Exception {
+        String message = "Illegal file format";
+        int needLines = 0, factLines = 0;
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
+            int filesCounter = Integer.parseInt(reader.readLine());
+            if (filesCounter < 0) {
+                throw new Exception(message);
             }
+            while (filesCounter != 0) {
+                String[] info = reader.readLine().split(" ");
+                if (info.length != 2) {
+                    throw new Exception(message);
+                }
+                int lines = Integer.parseInt(info[1]);
+                if (lines < 0) {
+                    throw new Exception(message);
+                }
+                needLines += lines;
+                filesCounter--;
+        }
+            while (reader.readLine() != null) {
+                factLines++;
+            }
+            if (factLines != needLines) {
+                throw new Exception(message);
+            }
+        }
     }
+
+    public void merge(List<String> files, String outputFile) {
+        try {
+            checkOutFileName(outputFile);
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
+                writer.write(String.valueOf(files.size()));
+                writer.newLine();
+                List<String> allLines = new ArrayList<>();
+                for (String inputFile : files) {
+                    int oldSize = allLines.size();
+                    try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
+                        allLines.addAll(reader.lines().toList());
+                        StringBuilder builder = new StringBuilder();
+                        builder.append(inputFile);
+                        builder.append(" ");
+                        builder.append(allLines.size() - oldSize);
+                        writer.write(builder.toString());
+                        writer.newLine();
+                    }
+                }
+                for (String line: allLines) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+                System.out.printf("Merge success!\nInput files: %s\nOutput file: %s", files, outputFile);
+            }
+        } catch (IOException ex) {
+            System.err.println(ex.getMessage());
+        }
+    }
+
+    private void checkOutFileName(String outputFile) throws IOException {
+       String[] illegalChars = new String[]{"\\", "/", ":", "*", "?", "\"", "<", ">", "|"};
+       String[] path = outputFile.split("\\\\");
+       String fileName = path[path.length - 1];
+       for (String ilChar : illegalChars) {
+           if (fileName.contains(ilChar)) {
+               throw new IOException("Illegal outputFile's name");
+           }
+       }
+   }
 }

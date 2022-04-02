@@ -1,8 +1,12 @@
-Hello world!
-<s_tar>
-
-Do u feel good?
-
-<s_tar>
-That's nice!
-<s_tar>
+2
+src\test\resources\Valhalla.txt 4
+src\test\resources\messageNumber1.txt 5
+All you need is: 
+  -some blood
+  - a few metall coins
+  - spongeBob
+Test message.
+It's a test message
+Please, do not pay attention/
+Thx
+Bye

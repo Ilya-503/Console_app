@@ -1,3 +1,0 @@
-<m_tar>
-That's nice!
-</m_tar>

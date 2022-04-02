@@ -1,0 +1,9 @@
+3
+src\test\resources\merg_1.txt 1
+src\test\resources\merg_2.txt 3
+src\test\resources\merg_3.txt 1
+hello,
+how are you?
+
+feel good?
+okay, that's nice!

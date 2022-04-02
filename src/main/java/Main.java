@@ -4,6 +4,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import java.util.List;
 
+
 public class Main {
 
     @Argument()
@@ -16,9 +17,7 @@ public class Main {
     @Option(name = "-u", usage = "separating InputFile", forbids = {"-out"}, metaVar = "InputFile")
     private String inputFile;
 
-    public static void main(String[] args) {
-        new Main().parseArgs(args);
-    }
+    public static void main(String[] args) {new Main().parseArgs(args);}
 
     private void parseArgs(String[] args) {
         CmdLineParser parser = new CmdLineParser(this);
@@ -38,6 +37,7 @@ public class Main {
             System.err.print ("EXAMPLE: tar -u filename.txt ");
             System.err.println("OR tar file1.txt file2.txt … -out output.txt.");
         } catch (Exception ex) {
+            ex.printStackTrace();
             System.err.println(ex.getMessage());
         }
     }
