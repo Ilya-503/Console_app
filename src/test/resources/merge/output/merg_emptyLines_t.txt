@@ -1,0 +1,13 @@
+2
+src\test\resources\merge\input\merg_emptyLines0.txt|4
+src\test\resources\merge\input\merg_emptyLines1.txt|6
+this file
+
+has 4 lines
+
+
+
+
+
+and this file - 6
+

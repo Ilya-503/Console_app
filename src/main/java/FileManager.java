@@ -4,23 +4,40 @@ import java.util.*;
 public class FileManager {
 
     public void separate(String inputFile) {
+        String message = "Illegal file format";
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
-            checkInputFileFormat(inputFile);
-            int fileCounter = Integer.parseInt(reader.readLine());
-            String[] files = new String[fileCounter];
-            Integer[] lines = new Integer[fileCounter];
-            for (int index = 0; index < fileCounter; index++) {
-                String[] info = reader.readLine().split(" ");
-                files[index] = info[0];
-                lines[index] = Integer.parseInt(info[1]);
+            List<String> allLines = reader.lines().toList();
+            int filesCounter = Integer.parseInt(allLines.get(0));
+            if (filesCounter <= 0) {
+                throw new Exception(message);
             }
-            for (int index = 0; index < fileCounter; index++) {
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(files[index]))) {
-                    int lineCounter = 0;
-                    while (lineCounter < lines[index]) {
-                        writer.write(reader.readLine());
+            String[] files = new String[filesCounter];
+            int[] lines = new int[filesCounter];
+            int totalLines = 0;
+            for (int i = 0; i < filesCounter; i++) {
+                String[] info = allLines.get(i + 1).split("\\|");
+                if (info.length != 2) {
+                    throw new Exception(message);
+                }
+                files[i] = info[0];
+                int linesInFile = Integer.parseInt(info[1]);
+                if (linesInFile < 0) {
+                    throw new Exception(message);
+                }
+                lines[i] = linesInFile;
+                totalLines += linesInFile;
+            }
+            if (totalLines != allLines.size() - 1 - filesCounter) {
+                throw new Exception(message);
+            }
+            int index = filesCounter + 1;
+            for (int i = 0; i < filesCounter; i++) {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(files[i]))) {
+                    while (lines[i] != 0) {
+                        writer.write(allLines.get(index));
                         writer.newLine();
-                        lineCounter++;
+                        lines[i]--;
+                        index++;
                     }
                 }
             }
@@ -28,35 +45,6 @@ public class FileManager {
                     inputFile, Arrays.stream(files).toList());
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
-        }
-    }
-
-    private void checkInputFileFormat(String inputFile) throws Exception {
-        String message = "Illegal file format";
-        int needLines = 0, factLines = 0;
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
-            int filesCounter = Integer.parseInt(reader.readLine());
-            if (filesCounter < 0) {
-                throw new Exception(message);
-            }
-            while (filesCounter != 0) {
-                String[] info = reader.readLine().split(" ");
-                if (info.length != 2) {
-                    throw new Exception(message);
-                }
-                int lines = Integer.parseInt(info[1]);
-                if (lines < 0) {
-                    throw new Exception(message);
-                }
-                needLines += lines;
-                filesCounter--;
-        }
-            while (reader.readLine() != null) {
-                factLines++;
-            }
-            if (factLines != needLines) {
-                throw new Exception(message);
-            }
         }
     }
 
@@ -71,11 +59,9 @@ public class FileManager {
                     int oldSize = allLines.size();
                     try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
                         allLines.addAll(reader.lines().toList());
-                        StringBuilder builder = new StringBuilder();
-                        builder.append(inputFile);
-                        builder.append(" ");
-                        builder.append(allLines.size() - oldSize);
-                        writer.write(builder.toString());
+                        writer.write(inputFile);
+                        writer.write("|");
+                        writer.write(String.valueOf(allLines.size() - oldSize));
                         writer.newLine();
                     }
                 }
