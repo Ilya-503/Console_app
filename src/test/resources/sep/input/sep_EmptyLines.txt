@@ -1,11 +1,14 @@
 2
-src\test\resources\sep\output\sep_out-1.txt|5
-src\test\resources\sep\output\sep_out-2.txt|5
+src\test\resources\sep\output\sep_out-1.txt
+22
 
 454545
 45
 
 4545
+
+src\test\resources\sep\output\sep_out-2.txt
+15
 
 
 

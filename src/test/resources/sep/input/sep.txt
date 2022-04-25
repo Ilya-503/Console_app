@@ -1,10 +1,12 @@
 2
-src\test\resources\sep\output\Valhalla.txt|4
-src\test\resources\sep\output\messageNumber1.txt|5
+src\test\resources\sep\output\Valhalla.txt
+71
 All you need is: 
   -some blood
   - a few metall coins
   - spongeBob
+src\test\resources\sep\output\messageNumber1.txt
+75
 Test message.
 It's a test message
 Please, do not pay attention/

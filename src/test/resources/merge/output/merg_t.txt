@@ -1,9 +1,12 @@
 3
-src\test\resources\merge\input\merg 1.txt|1
-src\test\resources\merge\input\merg 2.txt|3
-src\test\resources\merge\input\merg_3.txt|1
+src\test\resources\merge\input\merg 1.txt
+6
 hello,
+src\test\resources\merge\input\merg 2.txt
+26
 how are you?
 
 feel good?
+src\test\resources\merge\input\merg_3.txt
+18
 okay, that's nice!

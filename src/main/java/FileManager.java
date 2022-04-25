@@ -4,45 +4,30 @@ import java.util.*;
 public class FileManager {
 
     public void separate(String inputFile) {
-        String message = "Illegal file format";
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
-            List<String> allLines = reader.lines().toList();
-            int filesCounter = Integer.parseInt(allLines.get(0));
+            int filesCounter = Integer.parseInt(reader.readLine());
             if (filesCounter <= 0) {
-                throw new Exception(message);
+                throw new Exception("Illegal number of output files");
             }
-            String[] files = new String[filesCounter];
-            int[] lines = new int[filesCounter];
-            int totalLines = 0;
             for (int i = 0; i < filesCounter; i++) {
-                String[] info = allLines.get(i + 1).split("\\|");
-                if (info.length != 2) {
-                    throw new Exception(message);
+                String outputFile = reader.readLine();
+                checkOutFileName(outputFile);
+                System.out.println("---" + outputFile + "---");
+                BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+                int byteCounter = Integer.parseInt(reader.readLine());
+                if (byteCounter < 0) {
+                    throw new Exception("Size of " + outputFile + " file is negative");
                 }
-                files[i] = info[0];
-                int linesInFile = Integer.parseInt(info[1]);
-                if (linesInFile < 0) {
-                    throw new Exception(message);
+                while (byteCounter != 0) {
+                    int b = reader.read();
+                    writer.write(b);
+                    byteCounter--;
                 }
-                lines[i] = linesInFile;
-                totalLines += linesInFile;
+                reader.readLine();
+                writer.close();
             }
-            if (totalLines != allLines.size() - 1 - filesCounter) {
-                throw new Exception(message);
-            }
-            int index = filesCounter + 1;
-            for (int i = 0; i < filesCounter; i++) {
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(files[i]))) {
-                    while (lines[i] != 0) {
-                        writer.write(allLines.get(index));
-                        writer.newLine();
-                        lines[i]--;
-                        index++;
-                    }
-                }
-            }
-            System.out.printf("Separate success!\nInput file: %s\nOutput files: %s",
-                    inputFile, Arrays.stream(files).toList());
+        } catch (NumberFormatException ex) {
+            System.err.println("Illegal file format");
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
         }
@@ -51,27 +36,25 @@ public class FileManager {
     public void merge(List<String> files, String outputFile) {
         try {
             checkOutFileName(outputFile);
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
-                writer.write(String.valueOf(files.size()));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+            writer.write(String.valueOf(files.size()));
+            for (String inputFile : files) {
                 writer.newLine();
-                List<String> allLines = new ArrayList<>();
-                for (String inputFile : files) {
-                    int oldSize = allLines.size();
-                    try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
-                        allLines.addAll(reader.lines().toList());
-                        writer.write(inputFile);
-                        writer.write("|");
-                        writer.write(String.valueOf(allLines.size() - oldSize));
-                        writer.newLine();
-                    }
+                File file = new File(inputFile);
+                writer.write(inputFile);
+                writer.newLine();
+                writer.write(String.valueOf(file.length()));
+                writer.newLine();
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                int b = reader.read();
+                while (b != -1) {
+                    writer.write(b);
+                    b = reader.read();
                 }
-                for (String line: allLines) {
-                    writer.write(line);
-                    writer.newLine();
-                }
-                System.out.printf("Merge success!\nInput files: %s\nOutput file: %s", files, outputFile);
             }
-        } catch (IOException ex) {
+            writer.close();
+            System.out.printf("Success mering!\nOutput file: %s", outputFile);
+        } catch (Exception ex) {
             System.err.println(ex.getMessage());
         }
     }
@@ -82,7 +65,7 @@ public class FileManager {
        String fileName = path[path.length - 1];
        for (String ilChar : illegalChars) {
            if (fileName.contains(ilChar)) {
-               throw new IOException("Illegal outputFile's name");
+               throw new IOException("Illegal outputFile's name: " + outputFile);
            }
        }
    }
